@@ -1,0 +1,73 @@
+﻿<!DOCTYPE html>
+<!-- saved from url=(0016)http://localhost -->
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Markdown Monster Editor</title>
+    <!--<script type="text/javascript" src="https://getfirebug.com/firebug-lite.js#startOpened,overrideConsole"></script>-->
+    <style>
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            padding: 0;
+            margin: 0;
+            scrollbar-track-color: #535353;
+            scrollbar-arrow-color: silver;
+            scrollbar-base-color: #888;
+            -ms-overflow-style: -ms-autohiding-scrollbar;
+            background: #222;
+            color: #eee;
+        }
+
+        #Editor {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            line-height: 1.3;
+            -webkit-overflow-scrolling: touch;
+        }
+    </style>
+    <link rel="stylesheet" type="text/css" href="editor.css" />
+
+    <!-- User CSS Extensions can be placed in this file if it is created -->
+    <link rel="stylesheet" type="text/css" href="editor-user-extensions.css" />
+
+   
+</head>
+<body>
+<pre lang="markdown" id="Editor">
+</pre>
+<div id="StatusMessage"
+     style="display: none; position: fixed; right: 0; left: -1px; bottom: 0; padding: 5px; background: black; color: white; z-index: 1000; opacity: 0.85; font-size: 8.75pt;" 
+     ondblclick="this.style.display = 'none'; this.innerText = '';"
+     title="Status Window. Double Click to clear">
+</div>
+
+
+<script src="scripts/jquery.min.js"></script>
+
+<script src="scripts/Ace/ace.js" charset="utf-8"></script>
+<script src="scripts/Ace/ext-split.js"></script>
+<script src="scripts/Ace/ext-linking.js"></script>
+<script src="scripts/Ace/ext-rtl-mm.js"></script>
+
+<!--<script src="scripts/Ace/ext-language_tools.js" charset="utf-8"></script>-->
+<!-- make extra key bindings available -->
+<script src="scripts/Ace/keybinding-vim.js" charset="utf-8"></script>
+<script src="scripts/Ace/keybinding-emacs.js" charset="utf-8"></script>
+
+<script src="editorSettings.js"></script>
+<script src="editorSpellcheck.js"></script>
+<script src="editor-helpers.js"></script>
+
+<script src="editor.js"></script>
+<script src="editor-keybindings.js"></script>
+
+<!-- User CSS Extensions can be placed in this file if it is created -->
+<script src="editor-user-extensions.js"></script>
+
+</body>
+</html>
