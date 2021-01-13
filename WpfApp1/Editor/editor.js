@@ -43,8 +43,7 @@
             timeout = 300;
             return te.codeScrolled && te.codeScrolled > new Date().getTime() - timeout;
         },
-        codeScrolled: 0,
-        initialize: function (styleSettings) {
+        codeScrolled: 0,initialize: function (styleSettings) {
             if (!styleSettings)
             styleSettings = editorSettings;
 
@@ -556,8 +555,8 @@
         },
         keyboardCommand: function (key, action) {
 
-            if (chrome.webview.hostObjects.mm)
-                chrome.webview.hostObjects.mm.keyboardCommand(key, action);
+            if (te.mm.textboxAsync)
+                te.mm.textboxAsync.keyboardCommand(key, action);
         },
         editorSelectionOperation: function (action, text) {
             if (te.mm)
@@ -1238,32 +1237,12 @@
 // to pass in the form object and pass back the text
 // editor instance that allows the parent to make
 // calls into this component
-function initializeinterop(textbox, jsonStyle) {
+function initializeinterop(jsonStyle) {
     var te = window.textEditor;
 
     te.mm = {};
-    te.mm.textbox = textbox;
-
-    var style = JSON.parse(jsonStyle);
-
-    te.initialize(style);
-
-    setTimeout(te.keyBindings.setupKeyBindings, 300);
-
-    return window.textEditor;
-}
-
-function initializeinteropSimple(textbox) {
-    var te = window.textEditor;
-
-    te.mm = {};
-    te.mm.textbox = textbox;
-
-    te.isEditorSimple = true;
-
-    te.initialize(null);
-
-    return window.textEditor;
+    te.mm.textbox = window.chrome.webview.hostObjects.sync.mm;
+    te.mm.textboxAsync = window.chrome.webview.hostObjects.mm;
 }
 
 /*
@@ -1349,10 +1328,24 @@ function testCallback() {
 var standalone =  true;
 if (standalone) {
     setTimeout(function() {
+
     window.textEditor.initialize(null);
 
     te.setvalue("# Markdown Text\n\n* Bullet 1\n* Bullet 2");
+
+        
+    window.textEditor.keyBindings.setupKeyBindings();
+
+    console.log("initialized 1");
+
+    window.textEditor.mm = {};
+    window.textEditor.mm.textbox = window.chrome.webview.hostObjects.sync.mm;
+    window.textEditor.mm.textboxAsync = window.chrome.webview.hostObjects.mm;
+
+    console.log("initialized 2");
+
+
     // demonstrate how an external application can 'globally' trigger a function
     //Invoke("setvalue","# Markdown Text\n\n* Bullet 1\n* Bullet 2");   
-    },400);
+    }, 400);
 }

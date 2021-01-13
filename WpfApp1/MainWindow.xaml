@@ -22,6 +22,7 @@
                 </Button>
                 
                 <Button Click="Button2_Click"><AccessText>_Make Callback to MM Script</AccessText></Button>
+
             </ToolBar>
         </ToolBarPanel>
         <StackPanel Orientation="Horizontal"  Grid.Row="1" >
@@ -35,7 +36,10 @@
         </StackPanel>
         
         <DockPanel x:Name="DockWrapper" Grid.Row="2" Panel.ZIndex="2" >
-            <wv2:WebView2 Name="webView"  Visibility="Collapsed" AccessKeyManager.AccessKeyPressed="webView_AccessKeyPressed"
+            <wv2:WebView2 Name="webView"  Visibility="Collapsed" 
+                          AccessKeyManager.AccessKeyPressed="webView_AccessKeyPressed"
+                          KeyDown="webView_KeyDown"
+                          KeyUp="webView_KeyUp"
                           Source="{Binding Url}"
             />
             

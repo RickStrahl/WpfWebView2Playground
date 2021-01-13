@@ -20,13 +20,20 @@ namespace WpfApp1
         public object[] Parameters = { };
 
 
+        
+        public void InitializeInterop()
+        {
+            var cmd = "initializeInterop()";
+            _ = WebView.CoreWebView2.ExecuteScriptAsync(cmd);
+        }
+
         /// <summary>
         /// Calls a method with simple or no parameters: string, boolean, numbers
         /// </summary>
         /// <param name="method">Method to call</param>
         /// <param name="parameters">Parameters to path or none</param>
         /// <returns>object result as specified by TResult type</returns>
-        public async Task<object> CallMethod<TResult>(string method, params object[] parameters)
+        public async Task<TResult> CallMethod<TResult>(string method, params object[] parameters)
         {
             StringBuilder sb = new StringBuilder();
             sb.Append("textEditor." + method + "(");
@@ -48,7 +55,7 @@ namespace WpfApp1
             string result = await WebView.CoreWebView2.ExecuteScriptAsync(cmd);
             
             Type resultType = typeof(TResult);
-            return JsonSerializationUtils.Deserialize(result, resultType, true);
+            return (TResult) JsonSerializationUtils.Deserialize(result, resultType, true);
         }
 
         /// <summary>

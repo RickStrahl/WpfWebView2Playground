@@ -27,9 +27,10 @@ namespace WpfApp1
     /// </summary>
     public partial class MainWindow : Window
     {
+        public DotnetInterop Interop;
 
-        public DotnetInterop Interop = new DotnetInterop();
-
+        public JavaScriptInterop JsInterop;
+        
         public MainWindowModel Model {get; set; }= new MainWindowModel();
 
         public bool firstload = true;
@@ -38,8 +39,10 @@ namespace WpfApp1
         {
             InitializeComponent();
 
-            Interop.Window = this;
+            JsInterop = new JavaScriptInterop(webView);
+            Interop = new DotnetInterop(this, JsInterop);
 
+            // renders in a generic background color - so hide it
             webView.Visibility = Visibility.Hidden;
 
             DataContext = Model;
@@ -49,16 +52,9 @@ namespace WpfApp1
             
 
             webView.NavigationCompleted += WebView_NavigationCompleted;
-            
-            webView.Loaded += WebView_Loaded;
             webView.Unloaded += (s,a) => webView.Visibility = Visibility.Hidden;
         }
-
-        private void WebView_Loaded(object sender, RoutedEventArgs e)
-        {
-        }
-
-
+        
 
         private void WebView_NavigationCompleted(object sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationCompletedEventArgs e)
         {
@@ -81,9 +77,16 @@ namespace WpfApp1
             var env = await  CoreWebView2Environment.CreateAsync(userDataFolder: System.IO.Path.Combine(System.IO.Path.GetTempPath(),"MarkdownMonster_Browser"));
             await webView.EnsureCoreWebView2Async(env);
 
+            webView.CoreWebView2.OpenDevToolsWindow();
+
             webView.CoreWebView2.WebMessageReceived += CoreWebView2_WebMessageReceived;
             
             webView.CoreWebView2.AddHostObjectToScript("mm", Interop);
+
+            
+
+
+            JsInterop.InitializeInterop();
         }
 
         private void CoreWebView2_WebMessageReceived(object sender, Microsoft.Web.WebView2.Core.CoreWebView2WebMessageReceivedEventArgs e)
@@ -121,16 +124,15 @@ and this is **bold**.
 * Line 2
 ";
             var jsInterop = new JavaScriptInterop(webView);
-            jsInterop.CallMethod("setvalue", txt);
+            await jsInterop.CallMethod("setvalue", txt);
 
             
             //jsInterop.CallMethod("openSearchAndReplace", "dead", "wet");
 
-            jsInterop.CallMethod("setCursorPosition", 3, 10);
+            await jsInterop.CallMethod("setCursorPosition", 3, 10);
 
 
-            jsInterop.CallMethod("setselection", "Better Dead than bled");
-
+            await jsInterop.CallMethod("setselection", "Better Dead than bled");
         }
 
         private void Button2_Click(object sender, RoutedEventArgs e)
@@ -154,7 +156,7 @@ and this is **bold**.
 
         private void webView_AccessKeyPressed(object sender, AccessKeyPressedEventArgs e)
         {
-            Debug.WriteLine(e.Key.ToString());
+            Debug.WriteLine("AccessKeyPressed: "  + e.Key.ToString());
         }
 
         private void btnSendKey_Click(object sender, RoutedEventArgs e)
@@ -162,6 +164,23 @@ and this is **bold**.
             Interop.ForwardSpecialKeyCombos(-1, true, false);  // alt
             Interop.ForwardSpecialKeyCombos(78, true, false);  // n
         }
+
+        private void webView_KeyDown(object sender, KeyEventArgs e)
+        {
+            Debug.WriteLine("KeyDown: "  + e.Key.ToString());
+        }
+
+        private void webView_KeyUp(object sender, KeyEventArgs e)
+        {
+            Debug.WriteLine("KeyUp: "  + e.Key.ToString());
+        }
+
+        private void Button_Click_1(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        
     }
 
     [ClassInterface(ClassInterfaceType.AutoDual)]
