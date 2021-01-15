@@ -1,24 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using Microsoft.Web.WebView2.Core;
-using Newtonsoft.Json;
 using Westwind.Utilities;
-using WpfApp1;
-using Path = System.Windows.Shapes.Path;
 
 namespace WpfApp1
 {
@@ -53,6 +42,13 @@ namespace WpfApp1
 
             webView.NavigationCompleted += WebView_NavigationCompleted;
             webView.Unloaded += (s,a) => webView.Visibility = Visibility.Hidden;
+            webView.ContentLoading += WebView_ContentLoading;
+            
+            // Using a file URL
+            //webView.Source = new Uri(System.IO.Path.Combine(Environment.CurrentDirectory, "Editor/editor.htm"));
+
+            // Using a Mapped virtual url set with CoreWebView2.SetVirtualHostNameToFolderMapping
+            webView.Source = new Uri("https://test.editor/editor.htm");
         }
         
 
@@ -67,7 +63,6 @@ namespace WpfApp1
                 firstload = false;
                 webView.Visibility = Visibility.Visible;
             }
-
         }
 
         
@@ -77,14 +72,19 @@ namespace WpfApp1
             var env = await  CoreWebView2Environment.CreateAsync(userDataFolder: System.IO.Path.Combine(System.IO.Path.GetTempPath(),"MarkdownMonster_Browser"));
             await webView.EnsureCoreWebView2Async(env);
 
+
+
+            // Map a folder from the Executable Folder to a virtual domain
+            // https://test.editor/Editor.html 
+            webView.CoreWebView2.SetVirtualHostNameToFolderMapping(
+                    "test.editor", "Editor",
+                    CoreWebView2HostResourceAccessKind.Allow);
+
             webView.CoreWebView2.OpenDevToolsWindow();
 
             webView.CoreWebView2.WebMessageReceived += CoreWebView2_WebMessageReceived;
             
             webView.CoreWebView2.AddHostObjectToScript("mm", Interop);
-
-            
-
 
             JsInterop.InitializeInterop();
         }
@@ -110,30 +110,65 @@ namespace WpfApp1
             //webView.Source = new Uri(Model.Url);
         }
 
-        private async void Button_Click(object sender, RoutedEventArgs e)
+
+        private async void HelloWorld_Click(object sender, RoutedEventArgs e)
         {
-            //webView.CoreWebView2.ExecuteScriptAsync("textEditor.setvalue('# Hello World')");
+            // Simplest thing you can do - execute script on global scope
+            await webView.ExecuteScriptAsync($"window.alert('Hello from .NET. Time is: {DateTime.Now.ToString("HH:mm:ss")}.')");
+        }
+
+        
+        private async void HelloWorldFromJavaScript_Click(object sender, RoutedEventArgs e)
+        {
+            await webView.ExecuteScriptAsync($"callHelloWorldDotnet('Mr. JavaScript')");
+        }
 
 
-            var txt = @"# New Markdown text
+        private async void GetContent_Click(object sender, RoutedEventArgs e)
+        {
 
-This is 'left' for dead, this is ""Left for real"", 
+            var cmd = "textEditor.getvalue()";
+            var json = await webView.ExecuteScriptAsync(cmd);
+            var markdown = JsonSerializationUtils.Deserialize<string>(json);
+
+            //var markdown = await JsInterop.CallMethod<string>("getvalue");
+
+            MessageBox.Show(this, markdown, "Editor Content", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+
+        private async void SetContent_Click(object sender, RoutedEventArgs e)
+        {
+            var markdown = @"# New Markdown text
+
+This text is inserted from .NET into this document.
 and this is **bold**.
 
-* Line 1
-* Line 2
-";
-            var jsInterop = new JavaScriptInterop(webView);
-            await jsInterop.CallMethod("setvalue", txt);
+Quotes: double - "" and single '
 
+* Line 1
+* Line 2    
+";
+
+
+            var cmd = "textEditor.setvalue(" + JsonSerializationUtils.Serialize(markdown) + ")";
+            webView.CoreWebView2.ExecuteScriptAsync(cmd);
+            return;
+
+            //webView.CoreWebView2.ExecuteScriptAsync("textEditor.setvalue('# Hello World')");
+
+            var jsInterop = new JavaScriptInterop(webView);
+            await jsInterop.CallMethod("setvalue", markdown);
             
             //jsInterop.CallMethod("openSearchAndReplace", "dead", "wet");
 
-            await jsInterop.CallMethod("setCursorPosition", 3, 10);
+            await jsInterop.CallMethod("setCursorPosition", 3, 22);
 
+            await Task.Delay(3000);
 
-            await jsInterop.CallMethod("setselection", "Better Dead than bled");
+            await jsInterop.CallMethod("setselection", "-- inserted from .NET at " + DateTime.Now.ToString("t") + " -- ");
         }
+
 
         private void Button2_Click(object sender, RoutedEventArgs e)
         {
@@ -175,12 +210,44 @@ and this is **bold**.
             Debug.WriteLine("KeyUp: "  + e.Key.ToString());
         }
 
-        private void Button_Click_1(object sender, RoutedEventArgs e)
+      
+
+        private void NavigateToString_Click(object sender, RoutedEventArgs e)
         {
 
+
+            // To map related content use webView.CoreWebView2.SetVirtualHostNameToFolderMapping()
+            // to map a domain name to a path that's part of the installation folder.
+            webView.NavigateToString(@"
+<html>
+	<head>
+	    <link rel=""stylesheet""
+              href=""https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"">
+    </head>
+               
+
+<h1>String Navigation</h1>
+
+
+<img src=""https://markdownmonster.west-wind.com/Images/MarkdownMonsterLogo.jpg""
+     style='max-width: 100%' />	
+
+<!-- Relative Path to Editor Folder virtual Mapping -->
+<img src=""https://test.editor/fileicons/csharp.png"" />
+
+<p>
+This content generated to display as a string.
+</p>
+<p>
+This works only if you have self-contained content, or you link Web Resources or you explicitly implement
+</p>
+");
         }
 
-        
+        private void WebView_ContentLoading(object sender, CoreWebView2ContentLoadingEventArgs e)
+        {
+        }
+
     }
 
     [ClassInterface(ClassInterfaceType.AutoDual)]
@@ -206,8 +273,7 @@ and this is **bold**.
                 OnPropertyChanged(nameof(Url));
             }
         }
-
-        private string _Url = @"C:\Users\rstrahl\source\repos\WpfApp2\WpfApp1\bin\Debug\net472\Editor\editor.htm";
+        private string _Url = "about:blank"; //@"C:\Users\rstrahl\source\repos\WpfApp2\WpfApp1\bin\Debug\net472\Editor\editor.htm";
 
         public event PropertyChangedEventHandler PropertyChanged;
 

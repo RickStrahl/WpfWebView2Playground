@@ -1245,6 +1245,8 @@ function initializeinterop(jsonStyle) {
     te.mm.textboxAsync = window.chrome.webview.hostObjects.mm;
 }
 
+
+
 /*
 * Generic invocation script that invokes
 * a function on the 
@@ -1276,10 +1278,17 @@ function Callback(method) {
   window.chrome.webview.postMessage(json);        
 }
 
+async function callHelloWorldDotnet(name) {
+    // .NET object reference (async)
+    var msg = await window.chrome.webview.hostObjects.mm.HelloWorldSync(name);
+    alert(msg);
+}
+
+
 function testCallback() {
     alert("Called back from .NET");
     
-  //Callback("showMessage", "Show me what you got Rick!",10);
+    Callback("showMessage", "Message sent from JavaScript to .NET!",10);
 
   // Synchronous call
   // var res = window.chrome.webview.hostObjects.sync.mm.HelloWorld('rick');

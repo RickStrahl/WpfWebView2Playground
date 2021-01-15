@@ -17,11 +17,18 @@
         </Grid.RowDefinitions>
         <ToolBarPanel>
             <ToolBar>
-                <Button Click="Button_Click">
+                <Button Click="SetContent_Click">
                     <AccessText>_Set Content</AccessText>
+                </Button>
+                <Button Click="GetContent_Click">
+                    <AccessText>_Get Content</AccessText>
                 </Button>
                 
                 <Button Click="Button2_Click"><AccessText>_Make Callback to MM Script</AccessText></Button>
+
+                <Button Click="HelloWorld_Click">Hello World</Button>
+                <Button Click="HelloWorldFromJavaScript_Click">Hello JS World</Button>
+                <Button Click="NavigateToString_Click">Navigate to String</Button>
 
             </ToolBar>
         </ToolBarPanel>
@@ -42,7 +49,6 @@
                           KeyUp="webView_KeyUp"
                           Source="{Binding Url}"
             />
-            
         </DockPanel>
 
         <Button Grid.Row="2" Panel.ZIndex="10" Width="200" Height="32">Test Button</Button>

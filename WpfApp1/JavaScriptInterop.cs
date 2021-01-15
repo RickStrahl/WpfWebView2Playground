@@ -20,11 +20,33 @@ namespace WpfApp1
         public object[] Parameters = { };
 
 
-        
+
+        public async Task<string> GetEditorContent()
+        {
+            var txt = await CallMethod<string>("getvalue");
+            return txt;
+        }
+
+        public async Task SetEditorContent(string text)
+        {
+            text = text ?? string.Empty;
+            await CallMethod("setvalue", text);
+        }
+
+
+        /// <summary>
+        /// This works but - may have timing issues!
+        /// </summary>
         public void InitializeInterop()
         {
             var cmd = "initializeInterop()";
             _ = WebView.CoreWebView2.ExecuteScriptAsync(cmd);
+        }
+
+        public async Task InitializeInteropAsync()
+        {
+            var cmd = "initializeInterop()";
+            await WebView.CoreWebView2.ExecuteScriptAsync(cmd);
         }
 
         /// <summary>

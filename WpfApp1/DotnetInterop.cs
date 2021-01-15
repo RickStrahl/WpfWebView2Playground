@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace WpfApp1
 {
@@ -30,7 +31,7 @@ namespace WpfApp1
             Window = mainWindow;
         }
 
-        public void ForwardSpecialKeyCombos(int keyCode, bool alt, bool ctrl)
+        public async Task ForwardSpecialKeyCombos(int keyCode, bool alt, bool ctrl)
         {
             string chars = null;
 
@@ -50,11 +51,23 @@ namespace WpfApp1
 
         // var res = window.chrome.webview.hostObjects.sync.mm.HelloWorld('rick');
         // alert(res);
-        public string HelloWorld(string name)
+        public async Task<string> HelloWorld(string name)
         {
-            Thread.Sleep(300);
-            return $"Hello World, {name}!   - Message: {Message.Message}";
+            await Task.Delay(300);
+            var res = $"Hello Async World, {name}! - Message: 'This text was retrieved from .NET and shown here in JavaScript.'\n" +
+                      "Button click in .NET -> JavaScript Function calls Hello World in .NET -> Returns message to JavaScript";
+            return res;
         }
+
+        // var res = window.chrome.webview.hostObjects.sync.mm.HelloWorld('rick');
+        // alert(res);
+        public string HelloWorldSync(string name)
+        {
+            var res = $"Hello Sync World, {name}! - Message: 'This text was retrieved from .NET and shown here in JavaScript.'\n" +
+                      "Button click in .NET -> JavaScript Function calls Hello World in .NET -> Returns message to JavaScript";
+            return res;
+        }
+
 
 
         public MessageItem ReturnDotnetObject()
@@ -69,6 +82,11 @@ namespace WpfApp1
         }
 
 
+        /// <summary>
+        /// Dynamic Objects don't work correctly - must use Reflection explicitly
+        /// </summary>
+        /// <param name="message"></param>
+        /// <returns></returns>
         public string PassDynamic(object message)
         {
             dynamic msg = message as dynamic;
